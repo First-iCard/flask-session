@@ -579,17 +579,19 @@ class PeeweeSessionInterface(SessionInterface):
     session_class = PeeweeSession
 
     def __init__(
-            self, db, table, key_prefix, use_signer=False, permanent=True):
-        import peewee
+            self, db_config, table, key_prefix, use_signer=False, permanent=True):
 
-        self.db = db
+        import peewee
+        from playhouse.pool import PooledPostgresqlExtDatabase
+
+        self.db = PooledPostgresqlExtDatabase(**db_config)
         self.key_prefix = key_prefix
         self.use_signer = use_signer
         self.permanent = permanent
 
         class Session(peewee.Model):
             class Meta:
-                database = db
+                database = self.db
                 db_table = table
 
             session_id = peewee.CharField(max_length=256, primary_key=True)
@@ -600,8 +602,7 @@ class PeeweeSessionInterface(SessionInterface):
                 return '<Session data %s>' % self.data
 
         self.db.connect()
-        self.db.drop_table(Session, True)
-        self.db.create_tables([Session], safe=True)
+        Session.create_table(fail_silently=False)
         self.sql_session_model = Session
 
     def open_session(self, app, request):
