@@ -574,17 +574,15 @@ class PeeweeSessionInterface(SessionInterface):
     :param permanent: Whether to use permanent session or not.
     """
 
-
     serializer = pickle
     session_class = PeeweeSession
 
     def __init__(
-            self, db_config, table, key_prefix, use_signer=False, permanent=True):
+            self, db_config, db_type, table, key_prefix, use_signer=False, permanent=True):
 
         import peewee
-        from playhouse.pool import PooledPostgresqlExtDatabase
 
-        self.db = PooledPostgresqlExtDatabase(**db_config)
+        self.db = db_type(**db_config)
         self.key_prefix = key_prefix
         self.use_signer = use_signer
         self.permanent = permanent
@@ -602,7 +600,7 @@ class PeeweeSessionInterface(SessionInterface):
                 return '<Session data %s>' % self.data
 
         self.db.connect()
-        Session.create_table(fail_silently=False)
+        Session.create_table(fail_silently=True)
         self.sql_session_model = Session
 
     def open_session(self, app, request):
