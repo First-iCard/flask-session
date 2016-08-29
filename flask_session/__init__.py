@@ -15,7 +15,8 @@ import os
 
 from .sessions import NullSessionInterface, RedisSessionInterface, \
     MemcachedSessionInterface, FileSystemSessionInterface, \
-    MongoDBSessionInterface, SqlAlchemySessionInterface
+    MongoDBSessionInterface, SqlAlchemySessionInterface, \
+    PeeweeSessionInterface
 
 
 class Session(object):
@@ -77,6 +78,7 @@ class Session(object):
         config.setdefault('SESSION_MONGODB_COLLECT', 'sessions')
         config.setdefault('SESSION_SQLALCHEMY', None)
         config.setdefault('SESSION_SQLALCHEMY_TABLE', 'sessions')
+        config.setdefault('SESSION_PEEWEE_TABLE', 'sessions')
 
         if config['SESSION_TYPE'] == 'redis':
             session_interface = RedisSessionInterface(
@@ -101,6 +103,12 @@ class Session(object):
             session_interface = SqlAlchemySessionInterface(
                 app, config['SESSION_SQLALCHEMY'],
                 config['SESSION_SQLALCHEMY_TABLE'],
+                config['SESSION_KEY_PREFIX'], config['SESSION_USE_SIGNER'],
+                config['SESSION_PERMANENT'])
+        elif config['SESSION_TYPE'] == 'peewee':
+            session_interface = PeeweeSessionInterface(
+                config['SESSION_PEEWEE'],
+                config['SESSION_PEEWEE_TABLE'],
                 config['SESSION_KEY_PREFIX'], config['SESSION_USE_SIGNER'],
                 config['SESSION_PERMANENT'])
         else:
