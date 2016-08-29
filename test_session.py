@@ -141,7 +141,7 @@ class FlaskSessionTestCase(unittest.TestCase):
         app.config['SESSION_TYPE'] = 'peewee'
         app.config['SESSION_DB_CLASS'] = SqliteDatabase
         app.config['SESSION_PEEWEE_CONFIG'] = dict(
-            database="test_session_db",
+            database="sqlite",
         )
         Session(app)
         @app.route('/set', methods=['POST'])

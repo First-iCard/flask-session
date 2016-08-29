@@ -577,8 +577,8 @@ class PeeweeSessionInterface(SessionInterface):
     serializer = pickle
     session_class = PeeweeSession
 
-    def __init__(
-            self, db_config, db_type, table, key_prefix, use_signer=False, permanent=True):
+    def __init__(self, db_config, db_type, table, key_prefix,
+                 use_signer=False, permanent=True):
 
         import peewee
 
