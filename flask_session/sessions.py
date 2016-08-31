@@ -603,6 +603,13 @@ class PeeweeSessionInterface(SessionInterface):
         Session.create_table(fail_silently=True)
         self.sql_session_model = Session
 
+    def _get_expire(self, app, session):
+        if self.permanent:
+            expire = self.get_expiration_time(app, session)
+        else:
+            expire = datetime.now() + app.permanent_session_lifetime
+        return expire
+
     def open_session(self, app, request):
         sid = request.cookies.get(app.session_cookie_name)
         if not sid:
@@ -622,10 +629,13 @@ class PeeweeSessionInterface(SessionInterface):
         store_id = self.key_prefix + sid
         saved_session = self.sql_session_model.select().where(
             self.sql_session_model.session_id == store_id).first()
-        if saved_session and saved_session.expiry <= datetime.utcnow():
+
+        compare_date = datetime.utcnow() if self.permanent else datetime.now()
+        if saved_session and saved_session.expiry <= compare_date:
             # Delete expired session
             saved_session.delete_instance()
             saved_session = None
+
         if saved_session:
             try:
                 val = saved_session.data
@@ -651,7 +661,7 @@ class PeeweeSessionInterface(SessionInterface):
 
         httponly = self.get_cookie_httponly(app)
         secure = self.get_cookie_secure(app)
-        expires = self.get_expiration_time(app, session)
+        expires = self._get_expire(app, session)
         val = self.serializer.dumps(dict(session))
         if saved_session:
             saved_session.data = val
