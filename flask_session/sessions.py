@@ -70,7 +70,9 @@ class SqlAlchemySession(ServerSideSession):
 
 
 class PeeweeSession(ServerSideSession):
-    pass
+    def __init__(self, initial=None, sid=None, permanent=None, ip=None):
+        super(PeeweeSession, self).__init__(initial, sid, permanent)
+        self.ip = ip
 
 
 class SessionInterface(FlaskSessionInterface):
@@ -567,7 +569,7 @@ class PeeweeSessionInterface(SessionInterface):
     """Uses the Peewee as a session backend.
     Tested with flask-sessions==0.3.0
 
-    :param db: database.
+    :param db_config: database connection configuration.
     :param table: The table name you want to use.
     :param key_prefix: A prefix that is added to all store keys.
     :param use_signer: Whether to sign the session id cookie or not.
@@ -595,6 +597,7 @@ class PeeweeSessionInterface(SessionInterface):
             session_id = peewee.CharField(max_length=256, primary_key=True)
             data = peewee.BlobField()
             expiry = peewee.DateTimeField()
+            ip = peewee.CharField(max_length=25, null=True)
 
             def __repr__(self):
                 return '<Session data %s>' % self.data
@@ -609,6 +612,13 @@ class PeeweeSessionInterface(SessionInterface):
         else:
             expire = datetime.now() + app.permanent_session_lifetime
         return expire
+
+    def _get_ip(self, request):
+        if not request.headers.getlist("X-Forwarded-For"):
+            ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
+        else:
+            ip = request.headers.getlist("X-Forwarded-For")[0]
+        return ip
 
     def open_session(self, app, request):
         sid = request.cookies.get(app.session_cookie_name)
@@ -635,15 +645,15 @@ class PeeweeSessionInterface(SessionInterface):
             # Delete expired session
             saved_session.delete_instance()
             saved_session = None
-
+        ip = self._get_ip(request)
         if saved_session:
             try:
                 val = saved_session.data
                 data = self.serializer.loads(str(val))
-                return self.session_class(data, sid=sid)
+                return self.session_class(data, sid=sid, ip=ip)
             except:
-                return self.session_class(sid=sid, permanent=self.permanent)
-        return self.session_class(sid=sid, permanent=self.permanent)
+                return self.session_class(sid=sid, permanent=self.permanent, ip=ip)
+        return self.session_class(sid=sid, permanent=self.permanent, ip=ip)
 
     def save_session(self, app, session, response):
         domain = self.get_cookie_domain(app)
@@ -662,15 +672,19 @@ class PeeweeSessionInterface(SessionInterface):
         httponly = self.get_cookie_httponly(app)
         secure = self.get_cookie_secure(app)
         expires = self._get_expire(app, session)
+        ip = session.ip
+
         val = self.serializer.dumps(dict(session))
         if saved_session:
             saved_session.data = val
             saved_session.expiry = expires
+            saved_session.ip = ip
             saved_session.save()
         else:
             self.sql_session_model.create(session_id=store_id,
                                           data=val,
-                                          expiry=expires)
+                                          expiry=expires,
+                                          ip=ip)
         if self.use_signer:
             session_id = self._get_signer(app).sign(want_bytes(session.sid))
         else:
