@@ -622,9 +622,10 @@ class PeeweeSessionInterface(SessionInterface):
 
     def open_session(self, app, request):
         sid = request.cookies.get(app.session_cookie_name)
+        ip = self._get_ip(request)
         if not sid:
             sid = self._generate_sid()
-            return self.session_class(sid=sid, permanent=self.permanent)
+            return self.session_class(sid=sid, permanent=self.permanent, ip=ip)
         if self.use_signer:
             signer = self._get_signer(app)
             if signer is None:
@@ -645,7 +646,7 @@ class PeeweeSessionInterface(SessionInterface):
             # Delete expired session
             saved_session.delete_instance()
             saved_session = None
-        ip = self._get_ip(request)
+
         if saved_session:
             try:
                 val = saved_session.data
