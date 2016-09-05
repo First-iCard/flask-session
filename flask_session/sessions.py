@@ -585,9 +585,6 @@ class PeeweeSessionInterface(SessionInterface):
         import peewee
 
         self.db = db_type(**db_config)
-        self.db.commit_select = True
-        self.db.autorollback = True
-        self.db.threadlocals = True
 
         self.key_prefix = key_prefix
         self.use_signer = use_signer
@@ -642,9 +639,9 @@ class PeeweeSessionInterface(SessionInterface):
                 return self.session_class(sid=sid, permanent=self.permanent)
 
         store_id = self.key_prefix + sid
-        with self.db.atomic():
-            saved_session = self.sql_session_model.select().where(
-                self.sql_session_model.session_id == store_id).first()
+
+        saved_session = self.sql_session_model.select().where(
+            self.sql_session_model.session_id == store_id).first()
 
         compare_date = datetime.utcnow() if self.permanent else datetime.now()
         if saved_session and saved_session.expiry <= compare_date:
