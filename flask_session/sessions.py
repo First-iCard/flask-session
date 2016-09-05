@@ -642,11 +642,9 @@ class PeeweeSessionInterface(SessionInterface):
 
         # saved_session = self.sql_session_model.select().where(
         #     self.sql_session_model.session_id == store_id).first()
-        try:
-            saved_session = self.sql_session_model.get(
-                self.sql_session_model.session_id == store_id)
-        except saved_session.DoesNotExist:
-            saved_session = None
+
+        saved_session = self.sql_session_model.get(
+            self.sql_session_model.session_id == store_id)
 
         compare_date = datetime.utcnow() if self.permanent else datetime.now()
         if saved_session and saved_session.expiry <= compare_date:
