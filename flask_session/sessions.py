@@ -585,6 +585,8 @@ class PeeweeSessionInterface(SessionInterface):
         import peewee
 
         self.db = db_type(**db_config)
+        self.db.commit_select = True
+        self.db.autorollback = True
 
         self.key_prefix = key_prefix
         self.use_signer = use_signer
