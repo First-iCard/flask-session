@@ -569,6 +569,7 @@ class PeeweeSessionInterface(SessionInterface):
     """Uses the Peewee as a session backend.
     Tested with flask-sessions==0.3.0
 
+    :param db: database object
     :param db_config: database connection configuration.
     :param table: The table name you want to use.
     :param key_prefix: A prefix that is added to all store keys.
@@ -579,12 +580,16 @@ class PeeweeSessionInterface(SessionInterface):
     serializer = pickle
     session_class = PeeweeSession
 
-    def __init__(self, db_config, db_type, table, key_prefix,
+    def __init__(self, db, db_config, db_type, table, key_prefix,
                  use_signer=False, permanent=True):
 
         import peewee
 
-        self.db = db_type(**db_config)
+        if db:
+            self.db = db
+        else:
+            self.db = db_type(**db_config)
+
         self.db.commit_select = True
         self.db.autorollback = True
 

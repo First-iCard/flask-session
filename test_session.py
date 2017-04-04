@@ -138,6 +138,7 @@ class FlaskSessionTestCase(unittest.TestCase):
         from peewee import SqliteDatabase
         app = flask.Flask(__name__)
         app.debug = True
+        app.config['SESSION_PEEWEE'] = None
         app.config['SESSION_TYPE'] = 'peewee'
         app.config['SESSION_DB_CLASS'] = SqliteDatabase
         app.config['SESSION_PEEWEE_CONFIG'] = dict(
