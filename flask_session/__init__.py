@@ -107,7 +107,7 @@ class Session(object):
                 config['SESSION_PERMANENT'])
         elif config['SESSION_TYPE'] == 'peewee':
             session_interface = PeeweeSessionInterface(
-                config.get('SESSION_PEEWEE'),
+                config.get('SESSION_DB'),
                 config['SESSION_PEEWEE_CONFIG'],
                 config['SESSION_DB_CLASS'],
                 config['SESSION_PEEWEE_TABLE'],
