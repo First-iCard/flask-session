@@ -661,7 +661,7 @@ class PeeweeSessionInterface(SessionInterface):
         if saved_session:
             try:
                 val = saved_session.data
-                data = self.serializer.loads(str(val))
+                data = self.serializer.loads(val)
                 return self.session_class(data, sid=sid, ip=ip)
             except:
                 return self.session_class(sid=sid, permanent=self.permanent, ip=ip)
