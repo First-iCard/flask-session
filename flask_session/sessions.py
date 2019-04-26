@@ -647,7 +647,8 @@ class PeeweeSessionInterface(SessionInterface):
 
         store_id = self.key_prefix + sid
 
-        self.db.connect()
+        if self.db.is_closed():
+            self.db.connect()
 
         saved_session = self.sql_session_model.select().where(
             self.sql_session_model.session_id == store_id).first()
