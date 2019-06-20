@@ -687,7 +687,7 @@ class PeeweeSessionInterface(SessionInterface):
         expires = self._get_expire(app, session)
         ip = session.ip
 
-        val = self.serializer.dumps(dict(session))
+        val = self.serializer.dumps(dict(session), protocol=2)
         if saved_session:
             saved_session.data = val
             saved_session.expiry = expires
