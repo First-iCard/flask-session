@@ -621,16 +621,9 @@ class PeeweeSessionInterface(SessionInterface):
             expire = datetime.now() + app.permanent_session_lifetime
         return expire
 
-    def _get_ip(self, request):
-        if not request.headers.getlist("X-Forwarded-For"):
-            ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
-        else:
-            ip = request.headers.getlist("X-Forwarded-For")[0]
-        return ip
-
     def open_session(self, app, request):
         sid = request.cookies.get(app.session_cookie_name)
-        ip = self._get_ip(request)
+        ip = request.remote_addr
         if not sid:
             sid = self._generate_sid()
             return self.session_class(sid=sid, permanent=self.permanent, ip=ip)
