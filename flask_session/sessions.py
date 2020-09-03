@@ -677,6 +677,7 @@ class PeeweeSessionInterface(SessionInterface):
 
         httponly = self.get_cookie_httponly(app)
         secure = self.get_cookie_secure(app)
+        samesite = self.get_cookie_samesite(app)
         expires = self._get_expire(app, session)
         ip = session.ip
 
@@ -697,4 +698,5 @@ class PeeweeSessionInterface(SessionInterface):
             session_id = session.sid
         response.set_cookie(app.session_cookie_name, session_id,
                             expires=expires, httponly=httponly,
-                            domain=domain, path=path, secure=secure)
+                            domain=domain, path=path, secure=secure,
+                            samesite=samesite)
