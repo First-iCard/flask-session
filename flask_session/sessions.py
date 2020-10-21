@@ -610,8 +610,6 @@ class PeeweeSessionInterface(SessionInterface):
             def __repr__(self):
                 return '<Session data %s>' % self.data
 
-        # self.db.connect()
-        Session.create_table(fail_silently=True)
         self.sql_session_model = Session
 
     def _get_expire(self, app, session):
